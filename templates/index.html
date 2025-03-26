@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatIN</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap">
+    <link rel="icon" href="https://atin.com.vn/images/logo/logo-dark.png?v=bsQoLecwvsU2y8VuudYcMBRCYtxNX5RP1vkT7ptOKu4" type="image/png">
+
+    <style>
+        .pdf-chat-btn {
+            background-color: #e94235;
+            color: white;
+            margin-right: 10px;
+        }
+        .pdf-chat-btn:hover {
+            background-color: #d33426;
+        }
+        .pdf-chat-btn svg {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ChatIN</h1>
+        <div class="header-actions">
+            <a href="/pdf" class="btn pdf-chat-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                PDF Chat
+            </a>
+            <button id="clear-chat-btn" class="btn clear-chat-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+                Xóa trò chuyện
+            </button>
+        </div>
+    </div>
+    
+    <div class="chat-wrapper">
+        <div id="chat-container" class="chat-container">
+            <!-- Messages will be added here dynamically -->
+        </div>
+        
+        <div id="typing-indicator" class="typing-indicator hidden">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+    
+    <div class="input-container">
+        <div class="message-input-wrapper">
+            <textarea 
+                id="message-input" 
+                class="message-input"
+                placeholder="Hãy trò chuyện với tôi..."
+                rows="1"
+            ></textarea>
+        </div>
+        <button id="send-button" class="send-button" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+    
+    <script src="/static/script.js"></script>
+</body>
+</html>

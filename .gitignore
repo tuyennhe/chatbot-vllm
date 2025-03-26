@@ -1,0 +1,17 @@
+# Bỏ qua thư mục môi trường ảo
+myenv/
+
+# Bỏ qua các file Python cache
+__pycache__/
+*.py[cod]
+
+# Bỏ qua file cấu hình môi trường
+.env
+
+# Bỏ qua các file hệ thống
+.DS_Store
+Thumbs.db
+
+# Bỏ qua thư mục và file của Git
+.git
+.gitignore"myenv/" 

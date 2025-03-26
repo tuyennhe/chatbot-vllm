@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF ChatIN</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/pdf_styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap">
+    <link rel="icon" href="https://atin.com.vn/images/logo/logo-dark.png?v=bsQoLecwvsU2y8VuudYcMBRCYtxNX5RP1vkT7ptOKu4" type="image/png">
+
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="/" class="back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+                Quay lại
+            </a>
+        </div>
+        <h1>PDF ChatIN</h1>
+        <div class="header-actions">
+            <button id="clear-chat-btn" class="btn clear-chat-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+                Xóa trò chuyện
+            </button>
+            <button id="clear-pdf-btn" class="btn clear-pdf-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                    <line x1="18" y1="9" x2="12" y2="15"></line>
+                    <line x1="12" y1="9" x2="18" y2="15"></line>
+                </svg>
+                Xóa PDF
+            </button>
+        </div>
+    </div>
+    
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="pdf-upload-container">
+                <h3>Tải lên PDF</h3>
+                <form id="pdf-upload-form" enctype="multipart/form-data">
+                    <div class="file-input-container">
+                        <input type="file" id="pdf-file" name="pdf-file" accept=".pdf" />
+                        <label for="pdf-file" class="file-input-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            Chọn file PDF
+                        </label>
+                    </div>
+                    <button type="submit" id="upload-btn" class="upload-btn">Tải lên</button>
+                </form>
+                
+                <div id="upload-status" class="upload-status"></div>
+                
+                <div class="pdf-info">
+                    <h3>Thông tin PDF</h3>
+                    <div id="pdf-info-content" class="pdf-info-content">
+                        <p>Chưa có file PDF nào được tải lên.</p>
+                    </div>
+                    
+                    <div class="session-info">
+                        <p>Lưu ý: Dữ liệu PDF sẽ tự động bị xóa sau 30 phút không hoạt động hoặc khi bạn tải lên file mới.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-wrapper">
+            <div id="chat-container" class="chat-container">
+                <!-- Messages will be added here dynamically -->
+            </div>
+            
+            <div id="typing-indicator" class="typing-indicator hidden">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            
+            <div class="input-container">
+                <div class="message-input-wrapper">
+                    <textarea 
+                        id="message-input" 
+                        class="message-input"
+                        placeholder="Hỏi về nội dung PDF..."
+                        rows="1"
+                    ></textarea>
+                </div>
+                <button id="send-button" class="send-button" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/pdf_script.js"></script>
+</body>
+</html>
