@@ -655,3 +655,171 @@ code:not(pre code) {
     display: flex;
     align-items: center;
 }
+
+/* Định dạng toán học */
+.math, .math-inline {
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+}
+
+.math-block {
+    display: block;
+    text-align: center;
+    margin: 1rem 0;
+    font-size: 1.1em;
+}
+
+/* Định dạng cho các ký hiệu toán học */
+.math-symbol {
+    font-family: 'Times New Roman', serif;
+    font-style: normal;
+}
+
+/* Định dạng cho các dấu ngoặc */
+.math-paren {
+    font-family: 'Times New Roman', serif;
+    font-style: normal;
+}
+
+/* Định dạng cho các phép toán */
+.math-op {
+    font-family: 'Times New Roman', serif;
+    font-style: normal;
+    padding: 0 0.2em;
+}
+
+/* Định dạng cho phân số */
+.math-frac {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.math-frac-num {
+    display: block;
+    border-bottom: 1px solid currentColor;
+    padding: 0 0.1em;
+}
+
+.math-frac-denom {
+    display: block;
+    padding: 0 0.1em;
+}
+
+/* Định dạng cho căn bậc hai và căn bậc n */
+.math-sqrt {
+    position: relative;
+    padding-left: 0.4em;
+}
+
+.math-sqrt::before {
+    content: "√";
+    position: absolute;
+    left: 0;
+    top: -0.1em;
+    font-size: 1.2em;
+    font-style: normal;
+}
+
+/* Định dạng cho các chỉ số trên và chỉ số dưới */
+.math-sup {
+    font-size: 0.7em;
+    vertical-align: super;
+    line-height: 0;
+}
+
+.math-sub {
+    font-size: 0.7em;
+    vertical-align: sub;
+    line-height: 0;
+}
+
+/* Định dạng cho các ma trận */
+.math-matrix {
+    display: inline-table;
+    vertical-align: middle;
+    border-collapse: separate;
+    border-spacing: 0.2em;
+    margin: 0.2em 0;
+}
+
+.math-matrix-row {
+    display: table-row;
+}
+
+.math-matrix-cell {
+    display: table-cell;
+    text-align: center;
+    padding: 0.1em 0.4em;
+}
+
+/* Định dạng cho các dấu ngoặc lớn */
+.math-paren-left {
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+.math-paren-right {
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+/* Định dạng cho các biểu thức LaTeX */
+.katex {
+    font-size: 1.1em;
+}
+
+/* Định dạng cho các công thức toán học */
+.message .formula {
+    display: block;
+    text-align: center;
+    margin: 1rem 0;
+    font-family: 'Times New Roman', serif;
+    font-size: 1.1em;
+}
+
+/* Định dạng cho các dấu và phép toán trong công thức */
+.message .formula .times {
+    font-family: 'Times New Roman', serif;
+    padding: 0 0.2em;
+}
+
+.message .formula .equals {
+    padding: 0 0.3em;
+}
+
+.message .formula .plus, 
+.message .formula .minus, 
+.message .formula .multiply, 
+.message .formula .divide {
+    padding: 0 0.3em;
+}
+
+/* Cải thiện hiển thị cho các ký hiệu toán học đặc biệt */
+.message .formula .infinity::before {
+    content: "∞";
+}
+
+.message .formula .pi::before {
+    content: "π";
+}
+
+.message .formula .theta::before {
+    content: "θ";
+}
+
+.message .formula .sum::before {
+    content: "∑";
+    font-size: 1.2em;
+}
+
+.message .formula .integral::before {
+    content: "∫";
+    font-size: 1.2em;
+}
+
+/* Định dạng cho các biểu thức toán học inline */
+.message .math-inline {
+    font-style: italic;
+    font-family: 'Times New Roman', serif;
+}

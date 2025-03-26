@@ -75,17 +75,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(heartbeatInterval);
             }
             
-            // Thiết lập heartbeat mới mỗi 30 giây
+            // Thiết lập heartbeat mới mỗi 15 giây thay vì 30 giây
             heartbeatInterval = setInterval(() => {
                 if (websocket && websocket.readyState === WebSocket.OPEN) {
-                    websocket.send(JSON.stringify({
-                        action: 'heartbeat'
-                    }));
-                    console.log('Heartbeat sent');
+                    try {
+                        websocket.send(JSON.stringify({
+                            action: 'heartbeat'
+                        }));
+                        console.log('Heartbeat sent');
+                    } catch (e) {
+                        console.error('Error sending heartbeat:', e);
+                        clearInterval(heartbeatInterval);
+                        checkConnection();
+                    }
                 } else {
                     clearInterval(heartbeatInterval);
+                    checkConnection();
                 }
-            }, 30000); // 30 giây
+            }, 15000); // 15 giây
         }
         
         websocket.onmessage = (event) => {
@@ -228,9 +235,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatContainer.appendChild(disconnectMsg);
                 scrollToBottom();
                 
+                // Thêm nút khôi phục kết nối
+                addReconnectButton();
+                
                 connectWebSocket();
             }
         }
+    }
+    
+    // Thêm nút khôi phục kết nối
+    function addReconnectButton() {
+        // Kiểm tra nếu nút đã tồn tại
+        if (document.getElementById('reconnect-btn')) return;
+        
+        const reconnectBtn = document.createElement('button');
+        reconnectBtn.id = 'reconnect-btn';
+        reconnectBtn.className = 'reconnect-btn';
+        reconnectBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            Khôi phục kết nối
+        `;
+        
+        reconnectBtn.onclick = () => {
+            // Xóa nút
+            reconnectBtn.remove();
+            
+            // Hiển thị thông báo
+            const reconnectingMsg = document.createElement('div');
+            reconnectingMsg.className = 'system-message';
+            reconnectingMsg.textContent = 'Đang khôi phục kết nối...';
+            chatContainer.appendChild(reconnectingMsg);
+            scrollToBottom();
+            
+            // Khởi tạo lại kết nối
+            if (websocket) {
+                websocket.close();
+            }
+            connectWebSocket();
+            
+            // Sau 3 giây, xóa thông báo đang kết nối lại
+            setTimeout(() => {
+                if (reconnectingMsg.parentNode === chatContainer) {
+                    chatContainer.removeChild(reconnectingMsg);
+                }
+            }, 3000);
+        };
+        
+        // Thêm vào header-actions
+        document.querySelector('.header-actions').prepend(reconnectBtn);
     }
     
     // Kiểm tra kết nối mỗi 5 giây
@@ -323,41 +377,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Finish the streaming message
-    // Cập nhật hàm finishStreamingMessage
-function finishStreamingMessage() {
-    // Xóa timeout khi hoàn thành streaming
-    clearTimeout(streamingTimeout);
-    
-    if (!currentStreamElement) return;
-    
-    // Remove streaming class
-    currentStreamElement.classList.remove('streaming');
-    
-    // Lưu nội dung gốc
-    const originalContent = streamedContent;
-    
-    // Xóa nội dung hiện tại để áp dụng định dạng
-    currentStreamElement.innerHTML = '';
-    
-    // Kiểm tra nếu nội dung chứa code block
-    if (originalContent.includes('```')) {
-        // Xử lý code blocks và markdown
-        renderFormattedContent(originalContent, currentStreamElement);
-    } else {
-        // Nếu không có code block, xử lý văn bản thông thường
-        renderSimpleText(originalContent, currentStreamElement);
+    function finishStreamingMessage() {
+        // Xóa timeout khi hoàn thành streaming
+        clearTimeout(streamingTimeout);
+        
+        if (!currentStreamElement) return;
+        
+        // Remove streaming class
+        currentStreamElement.classList.remove('streaming');
+        
+        // Lưu nội dung gốc
+        const originalContent = streamedContent;
+        
+        // Xóa nội dung hiện tại để áp dụng định dạng
+        currentStreamElement.innerHTML = '';
+        
+        // Kiểm tra nếu nội dung chứa code block hoặc biểu thức toán học
+        if (originalContent.includes('```') || originalContent.includes('\\(') || originalContent.includes('\\[')) {
+            // Xử lý code blocks, markdown và biểu thức toán học
+            renderFormattedContent(originalContent, currentStreamElement);
+        } else {
+            // Nếu không có code block hay biểu thức toán học, xử lý văn bản thông thường
+            renderSimpleText(originalContent, currentStreamElement);
+        }
+        
+        // Clear reference
+        currentStreamElement = null;
+        streamedContent = '';
+        
+        // Scroll to bottom
+        scrollToBottom();
+        
+        // Giới hạn số lượng tin nhắn
+        limitChatMessages();
     }
     
-    // Clear reference
-    currentStreamElement = null;
-    streamedContent = '';
+    // Giới hạn số lượng tin nhắn
+    function limitChatMessages() {
+        const maxMessages = 50; // Giới hạn 50 tin nhắn
+        const messageRows = chatContainer.querySelectorAll('.message-row');
+        
+        if (messageRows.length > maxMessages) {
+            // Giữ lại tin nhắn mới nhất
+            const messagesToRemove = messageRows.length - maxMessages;
+            for (let i = 0; i < messagesToRemove; i++) {
+                chatContainer.removeChild(messageRows[i]);
+            }
+            
+            // Thêm thông báo đã xóa tin nhắn cũ
+            const noticeDiv = document.createElement('div');
+            noticeDiv.className = 'system-message';
+            noticeDiv.textContent = `${messagesToRemove} tin nhắn cũ đã được ẩn để tối ưu hiệu suất.`;
+            chatContainer.insertBefore(noticeDiv, chatContainer.firstChild);
+            
+            // Tự động xóa thông báo sau 5 giây
+            setTimeout(() => {
+                if (noticeDiv.parentNode === chatContainer) {
+                    chatContainer.removeChild(noticeDiv);
+                }
+            }, 5000);
+        }
+    }
     
-    // Scroll to bottom
-    scrollToBottom();
-}
-    
-    // Hàm xử lý code blocks
+    // Hàm xử lý code blocks và biểu thức toán học
     function renderFormattedContent(content, container) {
+        // Xử lý các biểu thức toán học dạng block trước
+        if (content.includes('\\[') && content.includes('\\]')) {
+            const mathBlockRegex = /\\?\\\[([\s\S]*?)\\?\\\]/g;
+            content = content.replace(mathBlockRegex, '<div class="formula">$1</div>');
+        }
+        
+        // Xử lý các biểu thức toán học dạng inline
+        if (content.includes('\\(') && content.includes('\\)')) {
+            const mathInlineRegex = /\\?\\\(([\s\S]*?)\\?\\\)/g;
+            content = content.replace(mathInlineRegex, '<span class="math-inline">$1</span>');
+        }
+        
+        // Xử lý các ký hiệu toán học phổ biến
+        content = content.replace(/\\times/g, '<span class="times">×</span>');
+        content = content.replace(/\\cdot/g, '<span class="times">·</span>');
+        
         // Tách nội dung thành các phần: code blocks và text thường
         let segments = [];
         let currentPos = 0;
@@ -418,9 +517,6 @@ function finishStreamingMessage() {
                 
                 // Nếu có kết quả đi kèm với code block, hiển thị kết quả
                 // Tìm dòng có "# Kết quả:" trong code block
-                const resultRegex = /# Kết quả: (.*)/g;
-                let resultMatch;
-                
                 if (segment.content.includes('# Kết quả:')) {
                     const resultDiv = document.createElement('div');
                     resultDiv.className = 'code-result';
@@ -428,13 +524,30 @@ function finishStreamingMessage() {
                     container.appendChild(resultDiv);
                 }
             } else {
-                // Render text thường với markdown
+                // Render text thường với markdown và toán học
                 renderSimpleText(segment.content, container);
             }
         });
     }
     
+    // Hàm xử lý văn bản thường với hỗ trợ markdown và toán học
     function renderSimpleText(text, container) {
+        // Xử lý các biểu thức toán học dạng inline: \(x \times y = 0\)
+        text = text.replace(/\\?\\\((.*?)\\?\\\)/g, '<span class="math-inline">$1</span>');
+        
+        // Xử lý các biểu thức toán học dạng block: \[x + y = 8\]
+        text = text.replace(/\\?\\\[(.*?)\\?\\\]/g, '<div class="formula">$1</div>');
+        
+        // Xử lý các ký hiệu toán học phổ biến
+        text = text.replace(/\\times/g, '<span class="times">×</span>');
+        text = text.replace(/\\cdot/g, '<span class="times">·</span>');
+        
+        // Cẩn thận với các ký tự đặc biệt - tránh thay thế trong code hoặc biểu thức toán học
+        // Tạm thời không thay thế dấu =, +, - trực tiếp để tránh ảnh hưởng đến code
+        // text = text.replace(/=/g, '<span class="equals">=</span>');
+        // text = text.replace(/\+/g, '<span class="plus">+</span>');
+        // text = text.replace(/-/g, '<span class="minus">-</span>');
+        
         // Xử lý các tiêu đề markdown (h1, h2, h3, etc.)
         const headingPattern = /^(#{1,6})\s+(.+)$/gm;
         text = text.replace(headingPattern, (match, hashes, content) => {
@@ -469,7 +582,8 @@ function finishStreamingMessage() {
             if (para.trim()) {
                 // Kiểm tra nếu đoạn văn bản đã là HTML (bắt đầu bằng thẻ HTML)
                 if (para.trim().startsWith('<') && 
-                    (para.includes('</h') || para.includes('</ul>') || para.includes('</ol>'))) {
+                    (para.includes('</h') || para.includes('</ul>') || para.includes('</ol>') || 
+                     para.includes('class="formula"'))) {
                     const div = document.createElement('div');
                     div.innerHTML = para;
                     container.appendChild(div);
@@ -500,34 +614,36 @@ function finishStreamingMessage() {
     }
     
     // Add a message to the UI (for non-streaming messages)
-    // Cập nhật hàm addMessageToUI
-function addMessageToUI(role, content) {
-    // Create message row
-    const messageRow = document.createElement('div');
-    messageRow.className = `message-row ${role}`;
-    
-    // Create message container
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${role}`;
-    
-    // Xử lý markdown trực tiếp
-    if (content.includes('```')) {
-        // Xử lý code blocks và markdown
-        renderFormattedContent(content, messageElement);
-    } else {
-        // Nếu không có code block, xử lý văn bản thông thường với markdown
-        renderSimpleText(content, messageElement);
+    function addMessageToUI(role, content) {
+        // Create message row
+        const messageRow = document.createElement('div');
+        messageRow.className = `message-row ${role}`;
+        
+        // Create message container
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${role}`;
+        
+        // Xử lý markdown và toán học
+        if (content.includes('```') || content.includes('\\(') || content.includes('\\[')) {
+            // Xử lý code blocks, markdown và biểu thức toán học
+            renderFormattedContent(content, messageElement);
+        } else {
+            // Nếu không có code block hay biểu thức toán học, xử lý văn bản thông thường
+            renderSimpleText(content, messageElement);
+        }
+        
+        messageRow.appendChild(messageElement);
+        chatContainer.appendChild(messageRow);
+        
+        // Hide welcome message if exists
+        const welcomeMessage = document.querySelector('.welcome-message');
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+        
+        // Giới hạn số lượng tin nhắn
+        limitChatMessages();
     }
-    
-    messageRow.appendChild(messageElement);
-    chatContainer.appendChild(messageRow);
-    
-    // Hide welcome message if exists
-    const welcomeMessage = document.querySelector('.welcome-message');
-    if (welcomeMessage) {
-        welcomeMessage.remove();
-    }
-}
     
     // Escape HTML characters to prevent XSS
     function escapeHtml(unsafe) {
@@ -544,7 +660,6 @@ function addMessageToUI(role, content) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
     
-    // Send message
     // Send message
     function sendMessage() {
         const message = messageInput.value.trim();
@@ -599,6 +714,9 @@ function addMessageToUI(role, content) {
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
         messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+        
+        // Enable/disable send button based on input
+        sendButton.disabled = messageInput.value.trim() === '' || isStreaming;
     });
     
     // Focus input field when page loads

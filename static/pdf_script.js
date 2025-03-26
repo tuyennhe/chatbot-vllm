@@ -528,89 +528,111 @@ document.addEventListener('DOMContentLoaded', () => {
      }
      
      // Hàm xử lý code blocks
-     function renderFormattedContent(content, container) {
-         // Loại bỏ phần tham chiếu nếu có
-         content = content.replace(/### Tham chiếu:[\s\S]*$/, '').trim();
-         
-         // Tách nội dung thành các phần: code blocks và text thường
-         let segments = [];
-         let currentPos = 0;
-         
-         // Tìm tất cả code blocks
-         const codeBlockRegex = /```(\w*)\n([\s\S]*?)\n```/g;
-         let match;
-         
-         while ((match = codeBlockRegex.exec(content)) !== null) {
-             // Nếu có text trước code block, thêm vào segments
-             if (match.index > currentPos) {
-                 segments.push({
-                     type: 'text',
-                     content: content.substring(currentPos, match.index)
-                 });
-             }
-             
-             // Thêm code block vào segments
-             segments.push({
-                 type: 'code',
-                 language: match[1],
-                 content: match[2]
-             });
-             
-             currentPos = match.index + match[0].length;
-         }
-         
-         // Nếu còn text sau code block cuối cùng
-         if (currentPos < content.length) {
-             segments.push({
-                 type: 'text',
-                 content: content.substring(currentPos)
-             });
-         }
-         
-         // Nếu không tìm thấy code block nào
-         if (segments.length === 0) {
-             segments.push({
-                 type: 'text',
-                 content: content
-             });
-         }
-         
-         // Render từng segment
-         segments.forEach(segment => {
-             if (segment.type === 'code') {
-                 // Render code block
-                 const pre = document.createElement('pre');
-                 const code = document.createElement('code');
-                 
-                 if (segment.language) {
-                     code.className = segment.language;
-                 }
-                 
-                 code.textContent = segment.content;
-                 pre.appendChild(code);
-                 container.appendChild(pre);
-                 
-                 // Nếu có kết quả đi kèm với code block, hiển thị kết quả
-                 // Tìm dòng có "# Kết quả:" trong code block
-                 const resultRegex = /# Kết quả: (.*)/g;
-                 let resultMatch;
-                 
-                 if (segment.content.includes('# Kết quả:')) {
-                     const resultDiv = document.createElement('div');
-                     resultDiv.className = 'code-result';
-                     resultDiv.textContent = segment.content.match(/# Kết quả: (.*)/)[1];
-                     container.appendChild(resultDiv);
-                 }
-             } else {
-                 // Render text thường với markdown
-                 renderSimpleText(segment.content, container);
-             }
-         });
-     }
-     
-     // Hàm xử lý văn bản thông thường
-     // Hàm xử lý văn bản thông thường với hỗ trợ markdown
+     // Hàm xử lý code blocks và biểu thức toán học
+function renderFormattedContent(content, container) {
+    // Xử lý các biểu thức toán học dạng block trước
+    if (content.includes('\\[') && content.includes('\\]')) {
+        const mathBlockRegex = /\\?\\\[([\s\S]*?)\\?\\\]/g;
+        content = content.replace(mathBlockRegex, '<div class="formula">$1</div>');
+    }
+    
+    // Xử lý các biểu thức toán học dạng inline
+    if (content.includes('\\(') && content.includes('\\)')) {
+        const mathInlineRegex = /\\?\\\(([\s\S]*?)\\?\\\)/g;
+        content = content.replace(mathInlineRegex, '<span class="math-inline">$1</span>');
+    }
+    
+    // Xử lý các ký hiệu toán học phổ biến
+    content = content.replace(/\\times/g, '<span class="times">×</span>');
+    content = content.replace(/\\cdot/g, '<span class="times">·</span>');
+    
+    // Tách nội dung thành các phần: code blocks và text thường
+    let segments = [];
+    let currentPos = 0;
+    
+    // Tìm tất cả code blocks
+    const codeBlockRegex = /```(\w*)\n([\s\S]*?)\n```/g;
+    let match;
+    
+    while ((match = codeBlockRegex.exec(content)) !== null) {
+        // Nếu có text trước code block, thêm vào segments
+        if (match.index > currentPos) {
+            segments.push({
+                type: 'text',
+                content: content.substring(currentPos, match.index)
+            });
+        }
+        
+        // Thêm code block vào segments
+        segments.push({
+            type: 'code',
+            language: match[1],
+            content: match[2]
+        });
+        
+        currentPos = match.index + match[0].length;
+    }
+    
+    // Nếu còn text sau code block cuối cùng
+    if (currentPos < content.length) {
+        segments.push({
+            type: 'text',
+            content: content.substring(currentPos)
+        });
+    }
+    
+    // Nếu không tìm thấy code block nào
+    if (segments.length === 0) {
+        segments.push({
+            type: 'text',
+            content: content
+        });
+    }
+    
+    // Render từng segment
+    segments.forEach(segment => {
+        if (segment.type === 'code') {
+            // Render code block
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            
+            if (segment.language) {
+                code.className = segment.language;
+            }
+            
+            code.textContent = segment.content;
+            pre.appendChild(code);
+            container.appendChild(pre);
+            
+            // Nếu có kết quả đi kèm với code block, hiển thị kết quả
+            // Tìm dòng có "# Kết quả:" trong code block
+            if (segment.content.includes('# Kết quả:')) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'code-result';
+                resultDiv.textContent = segment.content.match(/# Kết quả: (.*)/)[1];
+                container.appendChild(resultDiv);
+            }
+        } else {
+            // Render text thường với markdown và toán học
+            renderSimpleText(segment.content, container);
+        }
+    });
+}
+// Hàm xử lý văn bản thông thường với hỗ trợ markdown và toán học
 function renderSimpleText(text, container) {
+    // Xử lý các biểu thức toán học dạng inline: \(x \times y = 0\)
+    text = text.replace(/\\?\\\((.*?)\\?\\\)/g, '<span class="math-inline">$1</span>');
+    
+    // Xử lý các biểu thức toán học dạng block: \[x + y = 8\]
+    text = text.replace(/\\?\\\[(.*?)\\?\\\]/g, '<div class="formula">$1</div>');
+    
+    // Xử lý các ký hiệu toán học phổ biến
+    text = text.replace(/\\times/g, '<span class="times">×</span>');
+    text = text.replace(/\\cdot/g, '<span class="times">·</span>');
+    text = text.replace(/=/g, '<span class="equals">=</span>');
+    text = text.replace(/\+/g, '<span class="plus">+</span>');
+    text = text.replace(/-/g, '<span class="minus">-</span>');
+    
     // Xử lý các tiêu đề markdown (h1, h2, h3, etc.)
     const headingPattern = /^(#{1,6})\s+(.+)$/gm;
     text = text.replace(headingPattern, (match, hashes, content) => {
@@ -645,7 +667,8 @@ function renderSimpleText(text, container) {
         if (para.trim()) {
             // Kiểm tra nếu đoạn văn bản đã là HTML (bắt đầu bằng thẻ HTML)
             if (para.trim().startsWith('<') && 
-                (para.includes('</h') || para.includes('</ul>') || para.includes('</ol>'))) {
+                (para.includes('</h') || para.includes('</ul>') || para.includes('</ol>') || 
+                 para.includes('class="formula"'))) {
                 const div = document.createElement('div');
                 div.innerHTML = para;
                 container.appendChild(div);
@@ -674,10 +697,7 @@ function renderSimpleText(text, container) {
         }
     });
 }
-
-     
-     // Add a message to the UI (for non-streaming messages)
-     // Add a message to the UI (for non-streaming messages)
+// Add a message to the UI (for non-streaming messages)
 function addMessageToUI(role, content) {
     // Create message row
     const messageRow = document.createElement('div');
@@ -687,12 +707,12 @@ function addMessageToUI(role, content) {
     const messageElement = document.createElement('div');
     messageElement.className = `message ${role}`;
     
-    // Xử lý markdown trực tiếp
-    if (content.includes('```')) {
-        // Xử lý code blocks và markdown
+    // Xử lý markdown và toán học
+    if (content.includes('```') || content.includes('\\(') || content.includes('\\[')) {
+        // Xử lý code blocks, markdown và biểu thức toán học
         renderFormattedContent(content, messageElement);
     } else {
-        // Nếu không có code block, xử lý văn bản thông thường với markdown
+        // Nếu không có code block hay biểu thức toán học, xử lý văn bản thông thường
         renderSimpleText(content, messageElement);
     }
     
@@ -705,8 +725,10 @@ function addMessageToUI(role, content) {
         welcomeMessage.remove();
     }
     
-    // Giới hạn số lượng tin nhắn
-    limitChatMessages();
+    // Giới hạn số lượng tin nhắn (nếu có)
+    if (typeof limitChatMessages === 'function') {
+        limitChatMessages();
+    }
 }
 
      
